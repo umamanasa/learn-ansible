@@ -34,3 +34,82 @@
         state: restarted
         enabled: yes
 
+    ##Mongo DB
+    - name: Copy Mongo Repo
+      ansible.builtin.copy:
+        src: mongo.repo
+        dest: /etc/yum.repos.d/mongo.repo
+
+    - name: Install Mongodb
+      ansible.builtin.yum:
+        name: mongodb-org
+        state: installed
+
+    - name: Update listen address
+      ansible.builtin.replace:
+        path: /etc/mongod.conf
+        regexp: '127.0.0.1'
+        replace: '0.0.0.0'
+
+    - name: Start mongod service
+      ansible.builtin.systemd:
+        name: mongod
+        state: restarted
+        enabled: yes
+
+##Catalogue
+    - name: NodeJS setup
+      ansible.builtin.import_role:
+        name: common
+        tasks_from: nodejs
+
+##Redis
+    - name: Install Redis Repo File
+      ansible.builtin.yum:
+        name: https://rpms.remirepo.net/enterprise/remi-release-8.rpm
+        state: installed
+
+    - name: Enable Redis
+      ansible.builtin.yum:
+        name: redis:remi-6.2
+        state: enabled
+
+    - name: Install Redis
+      ansible.builtin.yum:
+        name: redis
+        state: installed
+
+    - name: Update listen address in /etc/redis.conf
+      ansible.builtin.replace:
+        path: /etc/redis.conf
+        regexp: '127.0.0.1'
+        replace: '0.0.0.0'
+
+    - name: Update listen address in /etc/redis/redis.conf
+      ansible.builtin.replace:
+        path: /etc/redis/redis.conf
+        regexp: '127.0.0.1'
+        replace: '0.0.0.0'
+
+    - name: Restart Redis service
+      ansible.builtin.service:
+        name: redis
+        state: restarted
+        enabled: yes
+
+## USER
+    - name: NodeJS setup
+      ansible.builtin.import_role:
+        name: common
+        tasks_from: nodejs
+
+## RabbitMQ
+    - name: Add Application User
+      community.rabbitmq.rabbitmq_user:
+        user: roboshop
+        password: roboshop123
+        vhost: /
+        configure_priv: .*
+        read_priv: .*
+        write_priv: .*
+        state: present
