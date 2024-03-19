@@ -1,0 +1,13 @@
+- name: Expense project
+  hosts: all
+  become: true
+  tasks:
+    - name: install NGINX
+      ansible.builtin.yum:
+        name: nginx
+        state: latest
+    - name: Start NGINX
+      ansible.builtin.systemd:
+        name: nginx
+        state: started
+        enabled: yes
